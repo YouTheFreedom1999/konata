@@ -1,0 +1,37 @@
+{
+    "fontSize": "14",
+    "fontFamily": "SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace",
+    "fontStyle": "normal",
+    "fontColor": "#222222",
+
+    "labelPane": {
+        "marginLeft": "5",
+        "backgroundColor": "#303340",
+        "fontColor": "#c7c8ca"
+    },
+    "pipelinePane": {
+        "backgroundColor": "#262930",
+        "backgroundColorStripeOverlay": "#ffffff08",
+
+        "fontColor": "#f0f0f0",
+        "borderColor": "#f0f0f0",
+        "borderWeight": "0.5",
+
+        "stageBackgroundColor": {
+            "hRateBegin": "55",
+            "sBegin": "40", 
+            "lBegin": "40",
+
+            "hRateEnd": "55",
+            "sEnd": "40",
+            "lEnd": "40"
+        },
+        "stallBackgroundColor": "hsl(0,0%,50%)",
+        "invalidBackgroundColor": "rgb(30,30,30)",
+
+        "arrowColor": "rgb(255,200,0)",
+        "arrowWeight": "1",
+
+        "flushedRegionColor": "rgba(0,0,0,0.5)"
+    }
+}
