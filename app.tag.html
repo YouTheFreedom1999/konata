@@ -101,8 +101,218 @@
     <div class="app_pipeline_canvas_container">
         <canvas ref="canvas"></canvas>
         <pre ref="tool_tip" class="tool_tip">{toolTipText}</pre>
+        <ul class="stage-sel-ul" ref="stage_sel_ul">
+            <li each="{stage, i in allStages}" class="stage-sel-li" ref="stage_sel_li_{stage}">
+                <div class="checkbox-wrapper-14">
+                    <input type="checkbox" class="switch" ref="stage_sel_li_input_{i}" onchange="{changeStageShow}">
+                    <label for="s1-14">{stage}</label>
+                </div>
+            </li>
+        </ul>
+        <ul class="exefu-show-ul" ref="exefu_show_ul">
+            <li each="{exefu, i in exefus}" class="exefu-show-li">
+                    <div class="exefu-show-block-head-{i % 5}">{exefu.name}</div>
+                    <div 
+                        each="{stage, j in exefu.stages}"
+                        class="exefu-show-block-body-{i % 5}"
+                    >
+                        {j}
+                    </div>
+            </li>
+        </ul>
     </div>
-    
+
+    <style>
+        .exefu-show-ul {
+            box-shadow: #000000 1.95px 1.95px 2.6px;
+            max-width: 500px;
+            position: absolute;
+            z-index: 101;
+            list-style-type: none;
+            background: #6b4b4b;
+            padding: 10px;
+        }
+        .exefu-show-li {
+            /* height: 20px;
+            font-size: small; */
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            margin-bottom: 10px;
+        }
+        .exefu-show-block-head-0,
+        .exefu-show-block-head-1,
+        .exefu-show-block-head-2,
+        .exefu-show-block-head-3,
+        .exefu-show-block-head-4 {
+            display: inline-block;
+            width: 50px;
+            margin-right: 5px;
+            text-align: center;
+        }
+
+        .exefu-show-block-body-0,
+        .exefu-show-block-body-1,
+        .exefu-show-block-body-2,
+        .exefu-show-block-body-3,
+        .exefu-show-block-body-4 {
+            display: inline-block;
+            width: 30px;
+            margin-right: 5px;
+            text-align: center;
+        }
+
+        .exefu-show-block-head-0, .exefu-show-block-body-0 { background-color: #34d0cd; color: #000000; }
+        .exefu-show-block-head-1, .exefu-show-block-body-1 { background-color: #48aef1; color: #000000; }
+        .exefu-show-block-head-2, .exefu-show-block-body-2 { background-color: #7296fb; color: #000000; }
+        .exefu-show-block-head-3, .exefu-show-block-body-3 { background-color: #8874f8; color: #000000; }
+        .exefu-show-block-head-4, .exefu-show-block-body-4 { background-color: #bf71e9; color: #000000; }
+    </style>
+    <style>
+        .stage-sel-ul {
+            box-shadow: #000000 1.95px 1.95px 2.6px;
+            max-width: 200px;
+            position: absolute;
+            z-index: 101;
+            list-style-type: none;
+            background: #4b6b50;
+            padding: 10px;
+        }
+        @supports (-webkit-appearance: none) or (-moz-appearance: none) {
+            .checkbox-wrapper-14 input[type=checkbox] {
+                --active: #275EFE;
+                --active-inner: #fff;
+                --focus: 2px rgba(39, 94, 254, .3);
+                --border: #BBC1E1;
+                --border-hover: #275EFE;
+                --background: #fff;
+                --disabled: #F6F8FF;
+                --disabled-inner: #E1E6F9;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                height: 21px;
+                outline: none;
+                display: inline-block;
+                vertical-align: top;
+                position: relative;
+                margin: 0;
+                cursor: pointer;
+                border: 1px solid var(--bc, var(--border));
+                background: var(--b, var(--background));
+                transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:after {
+                content: "";
+                display: block;
+                left: 0;
+                top: 0;
+                position: absolute;
+                transition: transform var(--d-t, 0.3s) var(--d-t-e, ease), opacity var(--d-o, 0.2s);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:checked {
+                --b: var(--active);
+                --bc: var(--active);
+                --d-o: .3s;
+                --d-t: .6s;
+                --d-t-e: cubic-bezier(.2, .85, .32, 1.2);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:disabled {
+                --b: var(--disabled);
+                cursor: not-allowed;
+                opacity: 0.9;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:disabled:checked {
+                --b: var(--disabled-inner);
+                --bc: var(--border);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:disabled+label {
+                cursor: not-allowed;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:hover:not(:checked):not(:disabled) {
+                --bc: var(--border-hover);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:focus {
+                box-shadow: 0 0 0 var(--focus);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch) {
+                width: 21px;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch):after {
+                opacity: var(--o, 0);
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch):checked {
+                --o: 1;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]+label {
+                display: inline-block;
+                vertical-align: middle;
+                cursor: pointer;
+                margin-left: 4px;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch) {
+                border-radius: 7px;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch):after {
+                width: 5px;
+                height: 9px;
+                border: 2px solid var(--active-inner);
+                border-top: 0;
+                border-left: 0;
+                left: 7px;
+                top: 4px;
+                transform: rotate(var(--r, 20deg));
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox]:not(.switch):checked {
+                --r: 43deg;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox].switch {
+                width: 38px;
+                border-radius: 11px;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox].switch:after {
+                left: 2px;
+                top: 2px;
+                border-radius: 50%;
+                width: 17px;
+                height: 17px;
+                background: var(--ab, var(--border));
+                transform: translateX(var(--x, 0));
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox].switch:checked {
+                --ab: var(--active-inner);
+                --x: 17px;
+            }
+
+            .checkbox-wrapper-14 input[type=checkbox].switch:disabled:not(:checked):after {
+                opacity: 0.6;
+            }
+        }
+
+        .checkbox-wrapper-14 * {
+            box-sizing: inherit;
+        }
+
+        .checkbox-wrapper-14 *:before,
+        .checkbox-wrapper-14 *:after {
+            box-sizing: inherit;
+        }
+    </style>
+
     <!--position を absolute にすることで，同じ位置に重ねることができる 
         見た目に関しては，CSS の方で定義
     -->
@@ -137,6 +347,89 @@
         self.oldHeight = -1;
         self.id = self.opts.id; // タブ ID は上位から ID 属性として与える
         self.valid = false;
+
+        // stage-sel-ul
+        self.allStages = store.activeTab.allStage;
+
+        self.changeStageShow = function(e) {
+            console.log(e, e.target.checked);
+            let stage = e.item.stage;
+
+            if(store.activeTab.visMode == "tid"){
+                store.activeTab.visMode = "stage&tid";
+            }else{
+                store.activeTab.visMode = "stage";
+            }
+            if(e.target.checked && store.activeTab.selStage.indexOf(stage)==-1){
+                store.activeTab.selStage.push(stage);
+                console.log('push '+stage)
+            }
+            if(!e.target.checked && store.activeTab.selStage.indexOf(stage)!=-1){
+                store.activeTab.selStage.splice(store.activeTab.selStage.indexOf(stage),1)
+                console.log('remove '+stage)
+            }
+            console.log(store.activeTab.selStage)
+            dispatcher.trigger(CHANGE.PANE_CONTENT_UPDATE);
+            // dispatcher.on(CHANGE.PANE_CONTENT_UPDATE, self.onPaneContentUpdate);
+        }
+
+        store.activeTab.selStage.forEach(stage => {
+            console.log(self.refs["stage_sel_li_" + stage])
+            self.refs["stage_sel_li_" + stage].checked = true;
+        });
+
+        // exefu-show-ul
+        self.exefus = [
+            {
+                name: "tpu",
+                stages: [1,2,3,4,5,6]
+            },
+            {
+                name: "vpu",
+                stages: [1,2,3,4]
+            },
+            {
+                name: "vlsu",
+                stages: [1,2,3,4,5]
+            },
+        ]
+
+        // key down
+        self.blocks = [self.refs.stage_sel_ul, self.refs.exefu_show_ul];
+        self.blockZIndexMin = 100;
+        self.blockZIndexMax = self.blockZIndexMin + self.blocks.length;
+        self.subZindex = function(zindex, min) {
+            if (zindex <= min) {
+                return min;
+            } else {
+                return zindex - 1;
+            }
+        }
+
+        document.onkeydown = function(e) {
+            let key = e.key;
+            if (key == "S" || key == "s") {
+                console.log(self.refs.stage_sel_ul)
+                if (self.refs.stage_sel_ul.style.display != "none") {
+                    self.refs.stage_sel_ul.style.display = "none";
+                }
+                else {
+                    self.refs.stage_sel_ul.style.display = "block";
+                    self.refs.stage_sel_ul.style.zIndex = self.blockZIndexMax;
+                    self.refs.exefu_show_ul.style.zIndex = self.subZindex(self.refs.exefu_show_ul.style.zIndex, self.blockZIndexMin);
+                }
+            }
+            else if (key == "E" || key == "e") {
+                if (self.refs.exefu_show_ul.style.display != "none") {
+                    self.refs.exefu_show_ul.style.display = "none";
+                }
+                else {
+                    self.refs.exefu_show_ul.style.display = "block";
+                    self.refs.exefu_show_ul.style.zIndex = self.blockZIndexMax;
+                    self.refs.stage_sel_ul.style.zIndex = self.subZindex(self.refs.stage_sel_ul.style.zIndex, self.blockZIndexMin);
+                }
+            }
+        }
 
         self.mouseOffset = [0, 0];  // 最後のマウス座標
         self.mouseIn = false;   // マウスがキャンバス上にいるかどうか
