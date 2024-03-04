@@ -407,7 +407,7 @@ class KonataRenderer{
     // ピクセル座標に対応するツールチップのテキストを作る
     getLabelToolTipText(y){
         let self = this;
-        let op = self.getOpFromPixelPosY(y, this.opResolution);
+        let op = self.getOpFromPixelPosY(y-4, this.opResolution);
         if (!op) {
             return null;
         }
@@ -429,7 +429,7 @@ class KonataRenderer{
         let self = this;
 
         // Y 座標に対応した op を取得
-        let op = self.getOpFromPixelPosY(y, this.opResolution);
+        let op = self.getOpFromPixelPosY(y-4, this.opResolution);
         if (!op) {
             return null;
         }
@@ -671,14 +671,23 @@ class KonataRenderer{
         
         let marginLeft = self.style_.labelPane.marginLeft;
         let marginTop = (self.laneH_ - self.lane_height_margin_*2 - fontSizeRaw) / 2 + fontSizeRaw;
+        let offsetY = 0;
+        if (logTop < 0) {
+            offsetY = -logTop;
+        }
+        this.exeLabel = ["tpu" , "vpu","vld" , "vse" , "prf"]
 
         try {
-            for (let logY = Math.floor(logTop); logY < logTop + logHeight; logY++) {
+            for (let logY = Math.floor(logTop+offsetY); logY < logTop + logHeight; logY++) {
                 let x = marginLeft;
                 let y = (logY - logTop) * self.opH_ + marginTop;
-                let op = self.getVisibleOp(logY);
-                if (op) {
-                    let text = `${logY}: s${op.gid} (t${op.tid}: r${op.rid}): ${op.labelName}`;
+                let op = self.getVisibleOp(logY-4);
+                
+                if (op && ((logY - Math.floor(logTop+offsetY)) >= 5)) {
+                    let text = `${logY-5}: s${op.gid} (t${op.tid}: r${op.rid}): ${op.labelName}`;
+                    ctx.fillText(text, x, y);
+                }else if(self.getVisibleOp(logY)){
+                    let text = `${this.exeLabel[logY - Math.floor(logTop+offsetY)]}`;
                     ctx.fillText(text, x, y);
                 }
             }
@@ -687,7 +696,6 @@ class KonataRenderer{
             return;
         }
     }
-
     // canvas にパイプラインを描画
     drawPipeline(canvas){
         let self = this;
@@ -724,7 +732,7 @@ class KonataRenderer{
             offsetY = -top;
             top = 0;
         }
-
+        
         // タイルの描画
         let skipRendering = false;
         for (let y = Math.floor(top); 
@@ -747,19 +755,23 @@ class KonataRenderer{
 
             let op = null;
             try {
-                op = self.getVisibleOp(y, this.opResolution);
+                op = self.getVisibleOp(y-4, this.opResolution);
             } catch(e) {
                 console.log(e);
                 return;
             }
-            if (op == null) {
+            if ((op == null) && (pixelY >= (5+offsetY)) ) {
                 // Since id can not be contiguous in gem5, there can be valid ops 
                 // after null.
-                continue;   
+                continue;
             }
-
-            if (!self.drawOp_(op, y - top + offsetY, left, left + width, scale, ctx)) {
-                skipRendering = true;
+            this.index = pixelY - offsetY;
+            if(this.index >= 5){
+                if (!self.drawOp_(op, y - top + offsetY, left, left + width, scale, ctx)) {
+                    skipRendering = true;
+                }
+            }else{
+                self.drawUtil(pixelY,left,left + width, scale, ctx)
             }
         }
 
@@ -776,6 +788,67 @@ class KonataRenderer{
             begin = Math.max(0, begin);
             ctx.fillStyle = this.style_.pipelinePane.invalidBackgroundColor;
             ctx.fillRect(0, begin, tile.width, tile.height);
+        }
+    }
+
+    drawUtil(h,startCycle,endCycle ,scale,ctx){
+        let self = this;
+        let fontSizeRaw = self.stageFontSize_;
+        ctx.font = self.stageFont_;
+
+        let top = h * self.opH_ + self.PIXEL_ADJUST;
+
+        for (let i = Math.floor(startCycle); i < endCycle; i++) {
+
+            if(store.activeTab.exeUtilList[i] == null)
+                continue;
+
+            let logLeft = i;
+            let logRight = i+1; 
+
+            let left = logLeft * self.opW_ + self.PIXEL_ADJUST;
+            let right = logRight * self.opW_ + self.PIXEL_ADJUST;
+            let rect = [
+                left, 
+                top + self.lane_height_margin_, 
+                right - left, 
+                (self.laneH_ - self.lane_height_margin_ * 2)
+            ];
+
+            const hue = 120; // 色调（取值范围：0-360）
+            const saturation = 100; // 饱和度（取值范围：0-100）
+            const lightness = 50; // 亮度（取值范围：0-100）
+
+            const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`; // 构建 HSL 格式的颜色值
+
+            ctx.fillStyle = color;
+            ctx.fillRect(rect[0], rect[1], rect[2], rect[3]);
+            
+            ctx.globalAlpha = this.alpha ;
+            if (self.canDrawFrame){
+                ctx.lineWidth = this.style_.pipelinePane.borderWeight;
+                ctx.strokeRect(rect[0], rect[1], rect[2], rect[3]);
+            }
+
+            // if (self.canDrawText) {
+            //     ctx.fillStyle = self.style_.pipelinePane.fontColor;
+            //     let textTop = top + (self.laneH_ - self.lane_height_margin_*2 - fontSizeRaw) / 2 + fontSizeRaw;
+            //     let textLeft = (stage.startCycle - startCycle) * self.opW_;
+            //     for (let j = 1, len_in = stage.endCycle - stage.startCycle; j < len_in; j++) {
+            //         if (j + stage.startCycle > endCycle) {
+            //             // プロセッサのバグなどが原因で非常に長いステージが生成された場合に 
+            //             // fillText が呼ばれ続けて重くなるため描画を打ち切る
+            //             break;  
+            //         }
+            //         let margin = Math.max(0, (self.opW_ - String(j).length*fontSizeRaw/2)/2);
+            //         ctx.fillText(j, textLeft + j * self.opW_ + margin, textTop);
+            //     }
+            //     let margin = Math.max(0, (self.opW_ - stage.name.length*fontSizeRaw/2)/2);
+            //     ctx.fillText(stage.name, textLeft + margin, textTop);
+            // }
+
+
+            ctx.globalAlpha = 1;
         }
     }
 
@@ -950,7 +1023,7 @@ class KonataRenderer{
         if (op.retiredCycle < startCycle) {
             return true;
         } else if (endCycle < op.fetchedCycle) {
-            return true;
+            return false;
         }
         if (op.retiredCycle == op.fetchedCycle) {
             return true;

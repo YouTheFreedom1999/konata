@@ -45,6 +45,8 @@ class Gem5K800PipeViewParser {
         /** @type {ParsingOpList} */
         this.secondParsingOpList_ = new ParsingOpList();
 
+        // this.exeUtilList = {}
+
         /** @type {number} - 最後に読み出された命令の ID*/
         this.lastGID_ = -1;  // seqNum
         this.lastNotFlushedID = -1; // 最後に正常にリタイアした命令の id
@@ -197,6 +199,7 @@ class Gem5K800PipeViewParser {
         this.parsingExLog_ = {};
         this.depTable_ = {};
         this.laneMap_ = {};
+        // this.exeUtilList = {};
     }
 
     /**
@@ -542,7 +545,10 @@ class Gem5K800PipeViewParser {
 
             this.opListBody_.setOp(i, op);
         }
+
+        console.log(store.activeTab.exeUtilList)
     }
+
 
     finishParsing() {
         if (this.closed_) {
@@ -640,8 +646,8 @@ class Gem5K800PipeViewParser {
         op.id = -1; // この段階ではまだ未定
         op.gid = seqNum;
         op.tid = tid;
-        op.rid = this.allocateRid + 1;
-        this.allocateRid = op.rid;
+        op.rid = this.allocateRid;
+        this.allocateRid = op.rid + 1;
         op.fetchedCycle = tick;
         op.line = this.curLine_;
         op.labelName += `${insnAddr}: ${disasm}`;
@@ -817,6 +823,9 @@ class Gem5K800PipeViewParser {
         let tick = Number(args[2]);
 
         switch (cmd) {
+            case "K800_TVU_Util":
+                this.parseTVUUtil(args)
+                break;
             case "fetch":
                 op = this.parseInitialCommand(args);
                 break;
@@ -848,6 +857,12 @@ class Gem5K800PipeViewParser {
                 break;
         }  // switch end
 
+    }
+
+    parseTVUUtil(args){
+        // console.log(args)
+        if(this.recordState[0] | this.recordState[1] |this.recordState[2] | this.recordState[3])
+            store.activeTab.exeUtilList[this.curParsingInsnCycle_] = args[21]
     }
 
     /** 

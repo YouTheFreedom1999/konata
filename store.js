@@ -139,6 +139,8 @@ class Tab{
         this.selThread = []
         this.selStage  = []
         //JSON.parse(JSON.stringify(this.allStage))
+
+        this.exeUtilList = {}
         
         this.scrollEndPos =  [0, 0];   // スクロール終了位置
         this.curScrollPos =  [0, 0];   // 現在のスクロール位置
